@@ -1,0 +1,18 @@
+spring:
+  security:
+    user:
+      name: user
+      password: 1234
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+jwt:
+  secret-key: "y0IOMi1n1Lp8Y3t2KOaCFS3uDFSDsf1aR5sD+bBjkIs="
