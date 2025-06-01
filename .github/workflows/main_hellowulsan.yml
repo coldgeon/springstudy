@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy JAR app to Azure Web App - hellowulsan
+name: Build and deploy JAR app to Azure Web App - univ-test3
 
 on:
   push:
@@ -23,15 +23,23 @@ jobs:
         with:
           java-version: '17'
           distribution: 'microsoft'
+          
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x ./gradlew
 
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Build with Gradle
+        run: ./gradlew clean bootJar
+      
+      - name: Rename JAR to app.jar
+        run: |
+          JAR_PATH=$(find build/libs -name "*SNAPSHOT.jar" | grep -v "plain" | head -n 1)
+          cp "$JAR_PATH" build/libs/app.jar
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/target/*.jar'
+          path: build/libs/app.jar
 
   deploy:
     runs-on: ubuntu-latest
@@ -40,27 +48,28 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
   
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: java-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_20A83671E4B64243AD0B588256DFD626 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_00D68030D19B4D488B319BC653E7FA0F }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_560C1E6D8B4F4CFF8A990DF43CC84EDD }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C6E0CA62F5404496B81D7EC4697412EC }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F994E9C629C04492BAA35C54F738AFB8 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2B40F44F440949DE812C28E910D79973 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'hellowulsan'
+          app-name: 'univ-test3'
           slot-name: 'Production'
-          package: '*.jar'
+          package: 'app.jar'
+          startup-command: 'java -jar /home/site/wwwroot/app.jar'
           
